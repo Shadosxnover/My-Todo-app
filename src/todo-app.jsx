@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+// comment to trigger sonar Cloud
 
 function TodoApp() {
     const [tasks, setTasks] = useState({
