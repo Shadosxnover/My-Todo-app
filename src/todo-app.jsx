@@ -67,14 +67,22 @@ function TodoApp() {
     }
 
     function handleEditChange(e) {
-        setEditingTask(prev => ({ ...prev, text: e.target.value }));
+        setEditingTask(prev => ({
+            ...prev,
+            text: e.target.value
+        }));
     }
 
-    function finishEditing(list) {
+    function finishEditing(list, taskId) {
+        if (!editingTask || !editingTask.text.trim()) {
+            setEditingTask(null);
+            return;
+        }
+
         setTasks(prev => ({
             ...prev,
             [list]: prev[list].map(task =>
-                task.id === editingTask.id ? editingTask : task
+                task.id === taskId ? { ...task, text: editingTask.text.trim() } : task
             )
         }));
         setEditingTask(null);
@@ -125,14 +133,35 @@ function TodoApp() {
         >
             <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-start">
-                    <span className="text-lg font-medium">{task.text}</span>
+                    {editingTask?.id === task.id ? (
+                        <input
+                            type="text"
+                            value={editingTask.text}
+                            onChange={handleEditChange}
+                            onBlur={() => finishEditing(listName, task.id)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    finishEditing(listName, task.id);
+                                } else if (e.key === 'Escape') {
+                                    setEditingTask(null);
+                                }
+                            }}
+                            className="flex-1 bg-gray-700 text-white px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            autoFocus
+                        />
+                    ) : (
+                        <span className="text-lg font-medium">{task.text}</span>
+                    )}
                     <div className="flex space-x-2">
-                        <button
-                            onClick={() => startEditing(task)}
-                            className="p-1 hover:bg-opacity-80 rounded"
-                        >
-                            ✏️
-                        </button>
+                        {listName !== 'done' && (
+                            <button
+                                onClick={() => startEditing(task)}
+                                className="p-1 hover:bg-opacity-80 rounded"
+                                disabled={editingTask !== null}
+                            >
+                                ✏️
+                            </button>
+                        )}
                         <button
                             onClick={() => deleteTask(task.id, listName)}
                             className="p-1 hover:bg-opacity-80 rounded"
